@@ -1,0 +1,47 @@
+.upload-ticket-container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #f7f9fb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.upload-ticket-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #045c75;
+  font-size: 26px;
+}
+
+.upload-ticket-container form input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.upload-ticket-container form input:focus {
+  border-color: #045c75;
+  outline: none;
+}
+
+.upload-ticket-container form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #045c75;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-ticket-container form button:hover {
+  background-color: #067b9f;
+}

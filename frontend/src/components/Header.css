@@ -1,0 +1,68 @@
+/* Header.css */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* הכפתורים משמאל */
+  padding: 15px 20px;
+  background-color: #282c34;
+  color: white;
+  width: 100%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* רווח בין כפתורים/שם */
+}
+
+.header h1 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header h1 button {
+  font-size: 40px;      /* גודל גדול */
+  font-weight: bold;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+}
+
+.header button {
+  background-color: #045c75;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  color: #282c34;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.header button:hover {
+  background-color: #067b9f;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  font-weight: bold;
+  margin-right: 10px; /* מפריד בין השם לכפתור ההתנתקות */
+}
+
+.logout-btn {
+  background-color: #d9534f;
+  color: white;
+}
+
+.logout-btn:hover {
+  background-color: #c9302c;
+}

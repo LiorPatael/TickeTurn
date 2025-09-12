@@ -1,0 +1,122 @@
+.register-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 40px;
+  background-color: #f7f9fb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.register-container h2 {
+  margin-bottom: 25px;
+  color: #045c75;
+  font-size: 28px;
+}
+
+.register-form input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.register-form input:focus {
+  border-color: #045c75;
+  outline: none;
+}
+
+.register-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #045c75;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.register-form button:hover {
+  background-color: #067b9f;
+}
+
+.register-footer {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.register-footer a {
+  color: #045c75;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  color: #ff0033;
+  background-color: #ffe6e6;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+  border: 1px solid #ffcccc;
+}
+
+.success-message {
+  color: #006600;
+  background-color: #e6ffe6;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+  border: 1px solid #ccffcc;
+}
+
+.register-form button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+  position: relative;
+}
+
+/* Loading state animation */
+.register-form button:disabled::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: rotate 1s linear infinite;
+}
+
+/* Input field disabled state */
+.register-form input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rotate {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}

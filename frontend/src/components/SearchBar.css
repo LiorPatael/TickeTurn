@@ -1,0 +1,39 @@
+.search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 20px auto;
+  width: fit-content;
+}
+
+.search-bar input {
+  padding: 10px;
+  width: clamp(150px, 30vw, 400px); /* קטן מ-150px, גדל עד 400px לפי 30% מרוחב המסך */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.search-bar button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: clamp(100px, 15vw, 150px); /* גם הכפתור יתכווץ ויתרחב */
+}
+
+/* Media Query למסכים קטנים */
+@media (max-width: 500px) {
+  .search-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-bar input,
+  .search-bar button {
+    width: 90%; /* כמעט כל רוחב המסך */
+    max-width: 300px;
+  }
+}

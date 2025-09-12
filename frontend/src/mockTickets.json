@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "eventName": "Coldplay Live",
+    "eventDate": "2025-09-15",
+    "location": "Tel Aviv Stadium",
+    "price": 350
+  },
+  {
+    "id": 2,
+    "eventName": "Imagine Dragons Concert",
+    "eventDate": "2025-10-03",
+    "location": "Hayarkon Park",
+    "price": 280
+  },
+  {
+    "id": 3,
+    "eventName": "Opera Night",
+    "eventDate": "2025-09-25",
+    "location": "Tel Aviv Opera House",
+    "price": 150
+  },
+  {
+    "id": 4,
+    "eventName": "Comedy Show with John Doe",
+    "eventDate": "2025-11-01",
+    "location": "Cinematheque Tel Aviv",
+    "price": 120
+  },
+  {
+    "id": 5,
+    "eventName": "Jazz Evening",
+    "eventDate": "2025-12-10",
+    "location": "Red Sea Jazz Club",
+    "price": 200
+  }
+  ,{
+    "id": 6,
+    "eventName": "Jazz Evening",
+    "eventDate": "2025-12-10",
+    "location": "Red Sea Jazz Club",
+    "price": 220
+  }
+]
