@@ -6,7 +6,6 @@ import Header from './components/Header';
 import Login from './components/Login';
 import Register from './components/Register';
 import SearchBar from './components/SearchBar';
-import logo from './logo.png';
 import UploadTicket from './components/UploadTicket';
 import TicketDetails from './components/TicketDetails';
 import AllTickets from './components/AllTickets'; 
@@ -19,24 +18,10 @@ function App() {
   const [results, setResults] = useState([]);
   const [user, setUser] = useState(null);
 
-  const [tickets, setTickets] = useState(() => {
-    const storedTickets = JSON.parse(localStorage.getItem("tickets")) || [];
-    const mergedTickets = [...mockTickets, ...storedTickets].filter(
-      (ticket, index, self) => index === self.findIndex(t => t.id === ticket.id)
-    );
-    localStorage.setItem("tickets", JSON.stringify(mergedTickets));
-    return mergedTickets;
-  });
+  const [tickets, setTickets] = useState([]);
 
-  const handleSearch = (query) => {
-    if (!query) {
-      setResults([]);
-      return;
-    }
-    const filtered = tickets.filter(ticket =>
-      ticket.eventName.toLowerCase().includes(query.toLowerCase())
-    );
-    setResults(filtered);
+  const handleSearch = (searchResults) => {
+    setResults(searchResults);
   };
 
   return (
@@ -57,7 +42,6 @@ function App() {
                     <FaUpload title="Upload Ticket" />
                   </Link>
                 </div>
-                <img src={logo} alt="TickeTurn Logo" className="logo" /><br />
                 <h1 style={{ textAlign: "center", marginTop: "50px" }}>SEARCH. BUY. ENJOY.</h1>
                 <h2 style={{ textAlign: "center", marginTop: "20px", marginBottom: "20px" }}>Find your next event with TickeTurn!</h2>
                 <SearchBar onSearch={handleSearch} />

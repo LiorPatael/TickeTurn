@@ -1,0 +1,103 @@
+:root {
+  /* Primary Colors */
+  --primary-dark: #1a1f3c;
+  --primary-main: #2c3e50;
+  --primary-light: #3498db;
+  
+  /* Accent Colors */
+  --accent-main: #00bcd4;
+  --accent-light: #4dd0e1;
+  --accent-gradient: linear-gradient(135deg, #00bcd4, #3498db);
+  
+  /* Background Colors */
+  --background-dark: #121212;
+  --background-main: #1e1e1e;
+  --background-light: #2d2d2d;
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-disabled: #666666;
+  
+  /* UI Elements */
+  --border-radius: 12px;
+  --box-shadow: 0 8px 32px rgba(0, 188, 212, 0.1);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Glass Effect */
+  --glass-background: rgba(255, 255, 255, 0.1);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-backdrop: blur(10px);
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-main);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-light);
+}
+
+/* Global Styles */
+body {
+  background: var(--background-dark);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Modern Button Style */
+.modern-button {
+  background: var(--accent-gradient);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: var(--box-shadow);
+}
+
+.modern-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 188, 212, 0.2);
+}
+
+/* Glass Card Style */
+.glass-card {
+  background: var(--glass-background);
+  backdrop-filter: var(--glass-backdrop);
+  border: var(--glass-border);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--box-shadow);
+}
+
+/* Input Style */
+.modern-input {
+  background: var(--background-light);
+  border: 2px solid var(--primary-light);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  transition: var(--transition);
+}
+
+.modern-input:focus {
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1);
+  outline: none;
+}

@@ -66,3 +66,10 @@
 .logout-btn:hover {
   background-color: #c9302c;
 }
+
+
+/*  Logo with transparaent background*/
+.logo{
+  height: 60px;
+  width: auto;
+}

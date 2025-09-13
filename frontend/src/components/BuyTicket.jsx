@@ -5,8 +5,9 @@ import { AuthContext } from "../AuthContext";
 function BuyTicket() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useContext(AuthContext); // ל־JWT
+  const { token } = useContext(AuthContext);
   const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:3050/tickets/${id}`)
@@ -15,82 +16,194 @@ function BuyTicket() {
       .catch(() => setTicket(null));
   }, [id]);
 
-  if (!ticket) return <div style={{ textAlign: "center", marginTop: "50px" }}>Loading ticket...</div>;
+  if (!ticket) {
+    return (
+      <div className="glass-card" style={{
+        maxWidth: "600px",
+        margin: "50px auto",
+        padding: "40px",
+        textAlign: "center",
+        background: "rgba(28, 31, 60, 0.95)",
+        backdropFilter: "blur(20px)",
+        borderRadius: "var(--border-radius)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 8px 32px rgba(0, 188, 212, 0.15)",
+        color: "var(--text-secondary)"
+      }}>
+        <span className="loader"></span>
+        <p style={{ marginTop: "20px" }}>Loading ticket details...</p>
+      </div>
+    );
+  }
 
   const handlePurchase = async () => {
-    if (!token) return alert("You must be logged in to purchase!");
-
-    const res = await fetch(`http://localhost:3050/tickets/${id}/purchase`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      return alert("Error: " + err.message);
+    if (!token) {
+      navigate("/login");
+      return;
     }
 
-    alert(`✅ Ticket for "${ticket.eventName}" purchased successfully!`);
-    navigate("/"); // חזרה לעמוד הראשי אחרי קנייה
+    try {
+      setLoading(true);
+      const res = await fetch(`http://localhost:3050/tickets/${id}/purchase`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to purchase ticket");
+      }
+
+      alert(`✅ Ticket for "${ticket.eventName}" purchased successfully!`);
+      navigate("/");
+    } catch (error) {
+      alert("Error: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{
+    <div className="glass-card" style={{
       maxWidth: "600px",
+      width: "90%",
       margin: "50px auto",
-      padding: "20px",
-      borderRadius: "10px",
-      backgroundColor: "#f8f9fa",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+      padding: "40px",
+      background: "rgba(28, 31, 60, 0.95)",
+      backdropFilter: "blur(20px)",
+      borderRadius: "var(--border-radius)",
+      border: "1px solid rgba(255, 255, 255, 0.1)",
+      boxShadow: "0 8px 32px rgba(0, 188, 212, 0.15)",
+      color: "var(--text-primary)"
     }}>
       {/* פרטי האירוע */}
-      <div style={{ marginBottom: "20px" }}>
-        <h2>{ticket.eventName}</h2>
-        <p><strong>Date:</strong> {ticket.eventDate}</p>
-        <p><strong>Price:</strong> ${ticket.price}</p>
-        <p><strong>Location:</strong> {ticket.location}</p>
-      </div>
+      <div style={{ marginBottom: "40px" }}>
+        <h1 style={{
+          fontSize: "2.5rem",
+          marginBottom: "20px",
+          background: "var(--accent-gradient)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          textAlign: "center"
+        }}>{ticket.eventName}</h1>
 
-      <hr style={{ margin: "20px 0", border: "1px solid #ccc" }} />
-
-      {/* פרטי המוכר */}
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "10px" }}>
         <div style={{
-          width: "40px",
-          height: "40px",
-          borderRadius: "50%",
-          backgroundColor: "#28a745",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: "bold"
+          display: "grid",
+          gap: "20px",
+          padding: "20px",
+          background: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "var(--border-radius)",
+          border: "1px solid rgba(255, 255, 255, 0.1)"
         }}>
-          {ticket.seller?.name ? ticket.seller.name[0].toUpperCase() : "?"}
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <p style={{ margin: 0 }}>{ticket.seller?.name || "Unknown"}</p>
-          <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>{ticket.seller?.email || "-"}</p>
+          {/* תאריך האירוע */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "15px",
+            color: "var(--text-secondary)"
+          }}>
+            <span style={{ fontSize: "1.5rem" }}>📅</span>
+            <div>
+              <h3 style={{ color: "var(--text-primary)", marginBottom: "5px" }}>תאריך האירוע</h3>
+              <p>{new Date(ticket.eventDate).toLocaleDateString('he-IL', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+              })}</p>
+            </div>
+          </div>
+
+          {/* מיקום האירוע */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "15px",
+            color: "var(--text-secondary)"
+          }}>
+            <span style={{ fontSize: "1.5rem" }}>📍</span>
+            <div>
+              <h3 style={{ color: "var(--text-primary)", marginBottom: "5px" }}>מיקום</h3>
+              <p>{ticket.location}</p>
+            </div>
+          </div>
+
+          {/* מחיר כרטיס */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "15px",
+            color: "var(--text-secondary)"
+          }}>
+            <span style={{ fontSize: "1.5rem" }}>💰</span>
+            <div>
+              <h3 style={{ color: "var(--text-primary)", marginBottom: "5px" }}>מחיר</h3>
+              <p style={{ 
+                fontSize: "1.2rem", 
+                color: "var(--accent-main)",
+                fontWeight: "bold"
+              }}>₪{ticket.price}</p>
+            </div>
+          </div>
+
+          {/* פרטי המוכר */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "15px",
+            color: "var(--text-secondary)"
+          }}>
+            <span style={{ fontSize: "1.5rem" }}>👤</span>
+            <div>
+              <h3 style={{ color: "var(--text-primary)", marginBottom: "5px" }}>מוכר</h3>
+              <p>{ticket.sellerName}</p>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* כפתור רכישת כרטיס */}
       <button
         onClick={handlePurchase}
+        disabled={loading || ticket.isSold}
+        className="modern-button"
         style={{
-          marginTop: "25px",
           width: "100%",
-          padding: "10px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer"
+          padding: "16px",
+          fontSize: "1.2rem",
+          fontWeight: "600",
+          marginTop: "20px",
+          opacity: ticket.isSold ? 0.7 : 1,
+          cursor: ticket.isSold ? "not-allowed" : "pointer"
         }}
       >
-        Confirm Purchase
+        {loading ? (
+          <span className="loader"></span>
+        ) : ticket.isSold ? (
+          "הכרטיס כבר נמכר"
+        ) : (
+          <>
+            רכישת כרטיס - ₪{ticket.price}
+          </>
+        )}
       </button>
+
+      {!token && (
+        <p style={{ 
+          textAlign: "center", 
+          marginTop: "20px",
+          color: "var(--text-secondary)",
+          fontSize: "0.9rem"
+        }}>
+          אנא <span style={{ 
+            color: "var(--accent-main)", 
+            cursor: "pointer",
+            textDecoration: "underline"
+          }} onClick={() => navigate("/login")}>התחבר</span> כדי לרכוש כרטיס זה
+        </p>
+      )}
     </div>
   );
 }

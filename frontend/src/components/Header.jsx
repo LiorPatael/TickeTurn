@@ -3,6 +3,7 @@ import './Header.css';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import logo from './../logo.png';
 
 function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -25,7 +26,7 @@ function Header() {
           </>
         )}
       </div>
-      <h1><button onClick={backHome}>TickeTurn</button></h1>
+      <h1><button onClick={backHome}><img src={logo} alt="TickeTurn Logo" className="logo" /></button></h1>
     </header>
   );
 }

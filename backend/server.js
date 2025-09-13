@@ -89,6 +89,23 @@ app.use((err, req, res, next) => {
 });
 
 // 🔹 מסלולי Tickets
+app.get("/tickets/latest", async (req, res) => {
+  try {
+    const [tickets] = await db.execute(
+      `SELECT t.*, s.name AS sellerName, s.email AS sellerEmail
+       FROM tickets t
+       JOIN users s ON t.sellerId = s.id
+       WHERE t.isSold = 0
+       ORDER BY t.id DESC
+       LIMIT 5`
+    );
+    res.json(tickets);
+  } catch (err) {
+    console.error("❌ Error fetching latest tickets:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 app.get("/tickets", async (req, res) => {
   try {
     const [tickets] = await db.execute(
@@ -131,8 +148,8 @@ app.post("/tickets", authenticate, async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      "INSERT INTO tickets (eventName, eventDate, price, location, sellerId) VALUES (?, ?, ?, ?, ?)",
-      [eventName, eventDate, price, location, req.user.id]
+      "INSERT INTO tickets (title, eventName, eventDate, price, location, sellerId) VALUES (?, ?, ?, ?, ?, ?)",
+      [eventName, eventName, eventDate, price, location, req.user.id]
     );
 
     console.log("✅ Ticket created with ID:", result.insertId);
