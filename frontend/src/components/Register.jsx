@@ -17,12 +17,28 @@ function Register() {
  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-    
-    console.log('Starting registration process...'); // Debug log
 
+    // Client-side validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (fullName.trim().length < 2) {
+      setError('Please provide your full name (at least 2 characters).');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      console.log('Sending registration request...'); // Debug log
       const registerRes = await fetch("http://localhost:3050/auth/register", {
         method: "POST",
         headers: { 
@@ -36,65 +52,37 @@ function Register() {
         })
       });
 
-      console.log('Registration response received:', registerRes.status); // Debug log
-      
       const data = await registerRes.json();
-      console.log('Registration response data:', data); // Debug log
 
       if (!registerRes.ok) {
-        throw new Error(data.message || "Registration failed");
+        // Server may return details array from validation middleware
+        if (data && data.details && Array.isArray(data.details)) {
+          setError(data.details.join(' | '));
+        } else {
+          setError(data.message || 'Registration failed');
+        }
+        return;
       }
 
       setIsSuccessful(true);
-      console.log('Registration successful, proceeding to login...'); // Debug log
-
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Registration/Login error:', error);
-      setError(error.message || "An error occurred during registration");
+      }, 1200);
+    } catch (err) {
+      setError(err.message || "An error occurred during registration");
     } finally {
       setLoading(false);
     }
 };
 
   return (
-    <div className="register-container glass-card" style={{
-      maxWidth: "400px",
-      width: "90%",
-      margin: "60px auto",
-      padding: "40px",
-      background: "rgba(28, 31, 60, 0.95)",
-      backdropFilter: "blur(20px)",
-      borderRadius: "var(--border-radius)",
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      boxShadow: "0 8px 32px rgba(0, 188, 212, 0.15)",
-      boxSizing: "border-box"
-    }}>
-      <h2 style={{
-        fontSize: "2rem",
-        marginBottom: "20px",
-        textAlign: "center",
-        background: "var(--accent-gradient)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent"
-      }}>Join TickeTurn Today</h2>
+    <div className="register-container glass-card">
+      <h2 className="register-title">Join TickeTurn Today</h2>
       
-      <p style={{
-        textAlign: "center",
-        marginBottom: "30px",
-        color: "var(--text-secondary)"
-      }}>Create your account and start exploring amazing events or share your tickets with others.</p>
+      <p className="register-sub">Create your account and start exploring amazing events or share your tickets with others.</p>
       
-      <form onSubmit={handleSubmit} style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        width: "100%"
-      }}>
-        <div style={{ position: "relative", width: "100%" }}>
+      <form onSubmit={handleSubmit} className="register-form">
+        <div className="input-wrap">
           <input
             type="text"
             placeholder="Enter your full name"
@@ -102,27 +90,11 @@ function Register() {
             onChange={e => setFullName(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>👤</span>
+          <span className="input-icon">👤</span>
         </div>
 
-        <div style={{ position: "relative", width: "100%" }}>
+        <div className="input-wrap">
           <input
             type="email"
             placeholder="Enter your email"
@@ -130,27 +102,11 @@ function Register() {
             onChange={e => setEmail(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>📧</span>
+          <span className="input-icon">📧</span>
         </div>
 
-        <div style={{ position: "relative", width: "100%" }}>
+        <div className="input-wrap">
           <input
             type="password"
             placeholder="Choose a password"
@@ -158,27 +114,11 @@ function Register() {
             onChange={e => setPassword(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>🔒</span>
+          <span className="input-icon">🔒</span>
         </div>
 
-        <div style={{ position: "relative", width: "100%" }}>
+        <div className="input-wrap">
           <input
             type="password"
             placeholder="Confirm your password"
@@ -186,38 +126,14 @@ function Register() {
             onChange={e => setConfirmPassword(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>🔒</span>
+          <span className="input-icon">🔒</span>
         </div>
 
         <button 
           type="submit" 
           className="modern-button"
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginTop: "10px",
-            fontSize: "1rem",
-            fontWeight: "600",
-            position: "relative"
-          }}
         >
           {loading ? (
             <span className="loader"></span>
@@ -227,21 +143,13 @@ function Register() {
         </button>
 
         {error && (
-          <div style={{
-            color: "var(--accent-main)",
-            textAlign: "center",
-            marginTop: "10px"
-          }}>
+          <div className="error-message">
             {error}
           </div>
         )}
 
         {isSuccessful && (
-          <div style={{
-            color: "#4CAF50",
-            textAlign: "center",
-            marginTop: "10px"
-          }}>
+          <div className="success-message">
             Registration successful! Redirecting...
           </div>
         )}

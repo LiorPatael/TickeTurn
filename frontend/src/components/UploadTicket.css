@@ -1,47 +1,146 @@
 .upload-ticket-container {
-  max-width: 500px;
-  margin: 50px auto;
-  padding: 30px;
-  background-color: #f7f9fb;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 680px;
+  margin: 48px auto;
+  padding: 28px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  box-shadow: 0 8px 30px rgba(8,15,25,0.25);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px) saturate(120%);
+  color: var(--text-primary);
 }
 
-.upload-ticket-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #045c75;
-  font-size: 26px;
+.upload-ticket-container h1 {
+  font-size: 1.8rem;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
 }
 
-.upload-ticket-container form input {
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 15px;
+.upload-ticket-container p {
+  margin: 0 0 18px 0;
+  color: var(--text-secondary);
+}
+
+.upload-ticket-container .input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.02);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.upload-ticket-container .input-wrap:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(4, 92, 117, 0.06);
+  border-color: rgba(4,92,117,0.18);
+}
+
+.upload-ticket-container .input-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(180deg, rgba(4,92,117,0.12), rgba(4,92,117,0.06));
   border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
+  font-size: 18px;
 }
 
-.upload-ticket-container form input:focus {
-  border-color: #045c75;
+.upload-ticket-container .modern-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px 6px;
+  font-size: 15px;
+  color: var(--text-primary);
   outline: none;
 }
 
-.upload-ticket-container form button {
-  width: 100%;
-  padding: 12px;
-  background-color: #045c75;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.upload-ticket-container .modern-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.85;
 }
 
-.upload-ticket-container form button:hover {
-  background-color: #067b9f;
+.upload-ticket-container .modern-input[type="date"] {
+  padding-top: 6px;
+}
+
+.upload-ticket-container .modern-button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-alt, #067b9f));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+  box-shadow: 0 8px 20px rgba(6,123,159,0.12);
+}
+
+.upload-ticket-container .modern-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(6,123,159,0.16);
+}
+
+.upload-ticket-container .modern-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.upload-ticket-container .error-message {
+  color: #ff6b6b;
+  background: rgba(255,107,107,0.06);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 10px 0 12px 0;
+  font-weight: 600;
+}
+
+/* small loader used inside buttons */
+.upload-ticket-container .loader,
+.upload-ticket-container .loader:after {
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+}
+.upload-ticket-container .loader {
+  display: inline-block;
+  position: relative;
+  border-top: 2px solid rgba(255,255,255,0.85);
+  border-right: 2px solid rgba(255,255,255,0.25);
+  border-bottom: 2px solid rgba(255,255,255,0.25);
+  border-left: 2px solid rgba(255,255,255,0.25);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .upload-ticket-container {
+    margin: 20px;
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .upload-ticket-container h1 {
+    font-size: 1.4rem;
+  }
+
+  .upload-ticket-container .input-icon { width: 34px; height: 34px; }
 }

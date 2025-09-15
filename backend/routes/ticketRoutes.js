@@ -11,7 +11,7 @@ router.get("/search", async (req, res) => {
 
   try {
     const [tickets] = await db.execute(
-      "SELECT * FROM tickets WHERE eventName LIKE ? OR location LIKE ?",
+      "SELECT * FROM tickets WHERE (eventName LIKE ? OR location LIKE ?) AND isSold = 0",
       [`%${searchQuery}%`, `%${searchQuery}%`]
     );
     res.json(tickets);
@@ -23,8 +23,44 @@ router.get("/search", async (req, res) => {
 
 // כל הכרטיסים
 router.get("/", async (req, res) => {
-  const [tickets] = await db.execute("SELECT * FROM tickets");
-  res.json(tickets);
+  try {
+    const { search, minPrice, maxPrice, startDate, endDate } = req.query;
+    
+    let query = "SELECT * FROM tickets WHERE isSold = 0";
+    const params = [];
+
+    // Add search condition
+    if (search) {
+      query += " AND (eventName LIKE ? OR location LIKE ? OR sellerName LIKE ? OR title LIKE ? )";
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    // Add price range conditions
+    if (minPrice) {
+      query += " AND price >= ?";
+      params.push(parseFloat(minPrice));
+    }
+    if (maxPrice) {
+      query += " AND price <= ?";
+      params.push(parseFloat(maxPrice));
+    }
+
+    // Add date range conditions
+    if (startDate) {
+      query += " AND eventDate >= ?";
+      params.push(startDate);
+    }
+    if (endDate) {
+      query += " AND eventDate <= ?";
+      params.push(endDate);
+    }
+
+    const [tickets] = await db.execute(query, params);
+    res.json(tickets);
+  } catch (error) {
+    console.error("Error fetching tickets:", error);
+    res.status(500).json({ message: "Error fetching tickets" });
+  }
 });
 
 // כרטיס לפי id
@@ -32,6 +68,20 @@ router.get("/:id", async (req, res) => {
   const [rows] = await db.execute("SELECT * FROM tickets WHERE id=?", [req.params.id]);
   if (rows.length === 0) return res.status(404).json({ message: "Ticket not found" });
   res.json(rows[0]);
+});
+
+// Delete a ticket
+router.delete("/:id", authenticate, async (req, res) => {
+  try {
+    const [result] = await db.execute("DELETE FROM tickets WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+    res.status(200).json({ message: "Ticket deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting ticket:", error);
+    res.status(500).json({ message: "Error deleting ticket" });
+  }
 });
 
 // העלאת כרטיס חדש

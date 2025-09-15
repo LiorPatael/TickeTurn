@@ -36,10 +36,10 @@ function App() {
             path="/"
             element={
               <>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginBottom: "20px" }}>
-                  <span style={{ fontWeight: "bold", color: "#333" }}>Upload Here</span>
-                  <Link to="/upload" style={{ textDecoration: "none", color: "black", fontSize: "30px" }}>
-                    <FaUpload title="Upload Ticket" />
+                <div className="upload-cta">
+                  <span className="upload-cta-label">Upload Here</span>
+                  <Link to="/upload" className="upload-cta-link" aria-label="Upload Ticket">
+                    <FaUpload className="upload-icon" />
                   </Link>
                 </div>
                 <h1 style={{ textAlign: "center", marginTop: "50px" }}>SEARCH. BUY. ENJOY.</h1>

@@ -80,9 +80,42 @@
   width: 100%;
 }
 
+/* Styles for the upload CTA */
+.upload-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
 
+.upload-cta-label {
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin-bottom: 6px;
+}
 
+.upload-cta-link {
+  text-decoration: none;
+  color: var(--accent-main, #045c75);
+  font-size: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(4,92,117,0.12), rgba(6,123,159,0.06));
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
 
+.upload-cta-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(6,123,159,0.12);
+}
+
+.upload-icon {
+  font-size: 22px;
+}
 
 @keyframes App-logo-spin {
   from {

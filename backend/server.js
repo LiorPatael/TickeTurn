@@ -1,31 +1,60 @@
 import express from "express";
 import cors from "cors";
-import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mysql from "mysql2/promise"; // נשתמש ב־promise API
 import authRoutes from "./auth.js";
+import visionRoutes from './routes/visionRoutes.js';
+import { db } from "./db.js";
+import { validateBody, ticketSchema, validateParamsId } from "./validation.js";
+import upload from './upload.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import winston from "winston";
+import expressRequestId from "express-request-id";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 
-// 🌟 חיבור למסד הנתונים
-let db;
-(async () => {
-  try {
-    db = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "ticketurn"
+// Configure Winston logger
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    // Uncomment the following line to enable file logging
+    // new winston.transports.File({ filename: "logs/server.log" })
+  ]
+});
+
+// Add request ID middleware
+app.use(expressRequestId());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Middleware to log DB connection status from the pool
+app.use((req, res, next) => {
+  db.getConnection()
+    .then(connection => {
+      console.log("✅ DB connected via pool");
+      connection.release();
+      next();
+    })
+    .catch(err => {
+      console.error("❌ DB pool connection failed:", err);
+      res.status(500).json({ message: "Database connection error" });
     });
-    console.log("✅ Connected to MySQL successfully");
-  } catch (err) {
-    console.error("❌ DB connection failed:", err);
-    process.exit(1); // נסגור את השרת אם אין חיבור
-  }
-})();
+});
 
 // CORS configuration and request logging
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
@@ -47,8 +76,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('/', cors(corsOptions));
 
-app.use(bodyParser.json());
-
 // Middleware לאימות JWT
 const authenticate = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -64,8 +91,25 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// 🔹 מסלולי Auth
-app.use("/auth", authRoutes);
+// Apply Helmet middleware globally for security headers
+app.use(helmet());
+
+// Rate limiting configuration for login and registration routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: "Too many login or registration attempts from this IP, please try again later."
+});
+
+// Apply rate limiting to login and registration routes
+app.use("/auth/login", authLimiter);
+app.use("/auth/register", authLimiter);
+
+// 🔹 מסלולי Auth - These routes expect JSON bodies.
+app.use("/auth", express.json(), authRoutes);
+
+// 🔹 מסלולי Vision - This route expects multipart/form-data
+app.use('/api/vision', visionRoutes);
 
 // Explicit preflight handler for the register route that echoes back the Origin when present
 app.options('/auth/register', (req, res) => {
@@ -85,6 +129,18 @@ app.use((err, req, res, next) => {
     if (err.message && err.message.includes('CORS')) return res.status(403).send('CORS Error');
     return res.status(500).send('Server Error');
   }
+  next();
+});
+
+// Log incoming requests
+app.use((req, res, next) => {
+  logger.info({
+    message: "Incoming request",
+    method: req.method,
+    path: req.path,
+    requestId: req.id,
+    origin: req.headers.origin || "unknown"
+  });
   next();
 });
 
@@ -108,11 +164,13 @@ app.get("/tickets/latest", async (req, res) => {
 
 app.get("/tickets", async (req, res) => {
   try {
+    // Return only unsold tickets so sold items don't appear in listings/search
     const [tickets] = await db.execute(
       `SELECT t.*, s.name AS sellerName, s.email AS sellerEmail, b.name AS buyerName
        FROM tickets t
        JOIN users s ON t.sellerId = s.id
-       LEFT JOIN users b ON t.buyerId = b.id`
+       LEFT JOIN users b ON t.buyerId = b.id
+       WHERE t.isSold = 0`
     );
     res.json(tickets);
   } catch (err) {
@@ -121,7 +179,7 @@ app.get("/tickets", async (req, res) => {
   }
 });
 
-app.get("/tickets/:id", async (req, res) => {
+app.get("/tickets/:id", validateParamsId, async (req, res) => {
   try {
     const [rows] = await db.execute(
       `SELECT t.*, s.name AS sellerName, s.email AS sellerEmail, b.name AS buyerName
@@ -140,45 +198,74 @@ app.get("/tickets/:id", async (req, res) => {
 });
 
 // העלאת כרטיס (מחובר)
-app.post("/tickets", authenticate, async (req, res) => {
-  const { eventName, eventDate, price, location } = req.body;
-  if (!eventName || !eventDate || !price || !location) {
-    return res.status(400).json({ message: "Missing fields" });
-  }
+app.post("/tickets", authenticate, (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      console.error("❌ Multer error:", err);
+      return res.status(400).json({ message: err });
+    }
 
-  try {
-    const [result] = await db.execute(
-      "INSERT INTO tickets (title, eventName, eventDate, price, location, sellerId) VALUES (?, ?, ?, ?, ?, ?)",
-      [eventName, eventName, eventDate, price, location, req.user.id]
-    );
+    console.log("DEBUG req.body:", req.body);
+    console.log("DEBUG req.file:", req.file);
+    console.log("DEBUG req.user:", req.user);
 
-    console.log("✅ Ticket created with ID:", result.insertId);
+    // Manually trigger validation after multer processes the body
+    const { error, value } = ticketSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
+    if (error) {
+      console.error("❌ Validation error:", error.details);
+      return res.status(400).json({ message: 'Validation error', details: error.details });
+    }
 
-    res.status(201).json({ 
-      id: result.insertId, eventName, eventDate, price, location, sellerId: req.user.id 
-    });
-  } catch (err) {
-    console.error("❌ Error inserting ticket:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+    const { title, eventName, eventDate, price, location } = value;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+      const [result] = await db.execute(
+        "INSERT INTO tickets (title, eventName, eventDate, price, location, sellerId, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [title, eventName, eventDate, price, location, req.user.id, imageUrl]
+      );
+
+      console.log("✅ Ticket created with ID:", result.insertId);
+
+      res.status(201).json({
+        id: result.insertId,
+        message: 'Ticket created successfully!',
+        ticket: { title, eventName, eventDate, price, location, sellerId: req.user.id, imageUrl }
+      });
+    } catch (dbErr) {
+      console.error("❌ Database error:", dbErr);
+      res.status(500).json({ message: "Server error", error: dbErr.message });
+    }
+  });
 });
 
 // רכישת כרטיס (מחובר)
-app.post("/tickets/:id/purchase", authenticate, async (req, res) => {
+app.post("/tickets/:id/purchase", authenticate, validateParamsId, async (req, res) => {
   try {
     const [rows] = await db.execute("SELECT * FROM tickets WHERE id=?", [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: "Ticket not found" });
     if (rows[0].isSold) return res.status(400).json({ message: "Ticket already sold" });
 
-    await db.execute("UPDATE tickets SET isSold=1, buyerId=? WHERE id=?", [req.user.id, req.params.id]);
+    await db.execute("DELETE FROM tickets WHERE id=?", [req.params.id]);
 
-    console.log(`✅ Ticket ${req.params.id} purchased by user ${req.user.id}`);
+    console.log(`✅ Ticket ${req.params.id} purchased and removed by user ${req.user.id}`);
 
-    res.json({ ...rows[0], isSold: true, buyerId: req.user.id });
+    res.json({ message: "Ticket purchased and removed successfully" });
   } catch (err) {
     console.error("❌ Error purchasing ticket:", err);
     res.status(500).json({ message: "Server error" });
   }
+});
+
+// Log errors
+app.use((err, req, res, next) => {
+  logger.error({
+    message: "Error occurred",
+    error: err.message,
+    stack: err.stack,
+    requestId: req.id
+  });
+  res.status(500).json({ message: "Server error" });
 });
 
 // 🌟 Global error handlers

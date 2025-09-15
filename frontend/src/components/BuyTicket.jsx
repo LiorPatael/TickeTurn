@@ -44,17 +44,22 @@ function BuyTicket() {
 
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3050/tickets/${id}/purchase`, {
+      
+      // First, purchase the ticket
+      const purchaseRes = await fetch(`http://localhost:3050/tickets/${id}/purchase`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
       });
 
-      if (!res.ok) {
-        const err = await res.json();
+      if (!purchaseRes.ok) {
+        const err = await purchaseRes.json();
         throw new Error(err.message || "Failed to purchase ticket");
       }
+
+      // no hard-delete here — backend marks ticket as sold (isSold=1) so it will be excluded from listings
 
       alert(`✅ Ticket for "${ticket.eventName}" purchased successfully!`);
       navigate("/");

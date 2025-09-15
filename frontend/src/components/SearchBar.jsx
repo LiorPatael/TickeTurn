@@ -9,18 +9,13 @@ function SearchBar({ onSearch }) {
   const [error, setError] = useState(null);
 
   const searchTickets = useCallback(async (searchQuery) => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Searching for:', searchQuery);
-      
+
+      // Fetch all tickets
       const response = await fetch(
-        `http://localhost:3050/tickets?search=${encodeURIComponent(searchQuery)}`,
+        "http://localhost:3050/tickets",
         {
           headers: {
             'Content-Type': 'application/json'
@@ -33,9 +28,23 @@ function SearchBar({ onSearch }) {
       }
 
       const data = await response.json();
-      console.log('Search results:', data);
-      const results = Array.isArray(data) ? data : [];
-      setSearchResults(results);
+      let filteredResults = Array.isArray(data) ? data : [];
+
+      // Exclude sold tickets
+      filteredResults = filteredResults.filter(ticket => !ticket.isSold);
+
+      // Only filter by event name (exact letters, case-insensitive)
+      if (searchQuery && searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        filteredResults = filteredResults.filter(ticket => 
+          (ticket.eventName || ticket.title || "").toLowerCase().includes(q)
+        );
+      } else {
+        // No query => no results
+        filteredResults = [];
+      }
+
+      setSearchResults(filteredResults);
     } catch (err) {
       console.error('Error searching tickets:', err);
       setError(err.message);
@@ -43,7 +52,7 @@ function SearchBar({ onSearch }) {
     } finally {
       setIsLoading(false);
     }
-  }, [onSearch]);
+  }, []);
 
   const handleInputChange = (e) => {
     const newQuery = e.target.value;
@@ -80,24 +89,27 @@ function SearchBar({ onSearch }) {
         position: "relative",
         boxSizing: "border-box"
       }}>
-        <input
-          type="text"
-          placeholder="חפש אירוע..."
-          value={query}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyPress}
-          className="modern-input"
-          style={{ 
-            flex: 1,
-            fontSize: "1.1rem",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "2px solid rgba(255, 255, 255, 0.1)",
-            transition: "all 0.3s ease",
-            width: "100%",
-            boxSizing: "border-box",
-            minWidth: 0 /* Prevents flex item from overflowing */
-          }}
-        />
+        <div style={{ width: "100%", marginBottom: "15px" }}>
+          <input
+            type="text"
+            placeholder="חפש אירוע..."
+            value={query}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            className="modern-input"
+            style={{ 
+              flex: 1,
+              fontSize: "1.1rem",
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "2px solid rgba(255, 255, 255, 0.1)",
+              transition: "all 0.3s ease",
+              width: "100%",
+              boxSizing: "border-box",
+              minWidth: 0,
+              marginBottom: "10px"
+            }}
+          />
+        </div>
         <button
           onClick={() => searchTickets(query)}
           disabled={isLoading}

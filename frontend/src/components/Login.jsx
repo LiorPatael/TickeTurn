@@ -6,64 +6,68 @@ import './Login.css'; // נשתמש ב־CSS חיצוני
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    // Client-side validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:3050/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
+
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Login failed");
+        // show validation details if provided
+        if (data && data.details && Array.isArray(data.details)) {
+          setError(data.details.join(' | '));
+        } else {
+          setError(data.message || 'Login failed');
+        }
+        return;
       }
-      const data = await res.json();
-      login(data.user, data.token);
-      navigate("/");
+
+      // success
+      if (data && data.user && data.token) {
+        login(data.user, data.token);
+        navigate('/');
+      } else {
+        setError('Unexpected server response');
+      }
     } catch (err) {
-      alert(err.message);
+      setError(err.message || 'Network error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login-container glass-card" style={{
-        maxWidth: "400px",
-        width: "90%",
-        margin: "60px auto",
-        padding: "40px",
-        background: "rgba(28, 31, 60, 0.95)",
-        backdropFilter: "blur(20px)",
-        borderRadius: "var(--border-radius)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: "0 8px 32px rgba(0, 188, 212, 0.15)",
-        boxSizing: "border-box"
-    }}>
-      <h2 style={{
-        fontSize: "2rem",
-        marginBottom: "30px",
-        textAlign: "center",
-        background: "var(--accent-gradient)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent"
-      }}>Welcome Back!</h2>
+    <div className="login-container glass-card">
+      <h2 className="login-title">Welcome Back!</h2>
       
-      <p style={{
-        textAlign: "center",
-        marginBottom: "30px",
-        color: "var(--text-secondary)"
-      }}>Great to see you again! Ready to explore more events?</p>
+      <p className="login-sub">Great to see you again! Ready to explore more events?</p>
       
-      <form onSubmit={handleSubmit} style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        width: "100%"
-      }}>
-        <div style={{ position: "relative", width: "100%" }}>
+      <form onSubmit={handleSubmit} className="login-form">
+        <div className="input-wrap">
           <input
             type="email"
             placeholder="Enter your email"
@@ -71,27 +75,11 @@ function Login() {
             onChange={e => setEmail(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>📧</span>
+          <span className="input-icon">📧</span>
         </div>
         
-        <div style={{ position: "relative", width: "100%" }}>
+        <div className="input-wrap">
           <input
             type="password"
             placeholder="Enter your password"
@@ -99,35 +87,17 @@ function Login() {
             onChange={e => setPassword(e.target.value)}
             required
             className="modern-input"
-            style={{
-              width: "100%",
-              padding: "12px 16px 12px 40px",
-              boxSizing: "border-box",
-              fontSize: "1rem",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "var(--border-radius)",
-              color: "var(--text-primary)",
-              transition: "all 0.3s ease"
-            }}
           />
-          <span style={{
-            position: "absolute",
-            left: "12px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}>🔒</span>
+          <span className="input-icon">🔒</span>
         </div>
         
-        <button type="submit" className="modern-button" style={{
-          width: "100%",
-          padding: "12px",
-          marginTop: "10px",
-          fontSize: "1rem",
-          fontWeight: "600"
-        }}>
-          Sign In
+        <button type="submit" className="modern-button login-submit" disabled={loading}>
+          {loading ? <span className="loader"></span> : 'Sign In'}
         </button>
+
+        {error && (
+          <div className="error-message" style={{ marginTop: '12px' }}>{error}</div>
+        )}
       </form>
     </div>
   );
